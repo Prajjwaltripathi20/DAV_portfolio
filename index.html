@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prajjwal Tripathi - Data Analyst & Frontend Developer</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: rgba(22, 27, 34, 0.7);
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-purple: #bc8cff;
+            --accent-cyan: #39d353;
+            --glass-bg: rgba(13, 17, 23, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+        .loader-content {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Scroll Progress */
+        #scroll-progress {
+            position: fixed;
+            top: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+
+        /* Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* Sidebar Profile */
+        .sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .avatar {
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: block;
+            border: 2px solid var(--border-color);
+            padding: 4px;
+            background: var(--bg-dark);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .sidebar:hover .avatar {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.4);
+            border-color: var(--accent-blue);
+        }
+        .name { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.2rem; }
+        .username { color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 1rem; }
+        .bio { font-size: 0.95rem; margin-bottom: 1.5rem; color: var(--text-primary); }
+        
+        .contact-info { margin-bottom: 1.5rem; }
+        .contact-info a {
+            display: flex; align-items: center; gap: 0.5rem;
+            color: var(--text-secondary); text-decoration: none;
+            margin-bottom: 0.5rem; transition: color 0.3s;
+        }
+        .contact-info a:hover { color: var(--accent-blue); }
+        
+        .skills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .skill-badge {
+            background: rgba(48, 54, 61, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .skill-badge:hover {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(188, 140, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .typing-container {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            min-height: 2.2rem;
+        }
+        .typing-text { border-right: 2px solid var(--accent-blue); padding-right: 5px; animation: blink 0.75s step-end infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
+        
+        .cta-buttons { display: flex; justify-content: center; gap: 1rem; }
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary {
+            background: var(--accent-blue);
+            color: var(--bg-dark);
+            border: none;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 15px var(--accent-blue);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 15px rgba(188, 140, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 16px; height: 16px;
+            background: var(--accent-cyan);
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center;
+        }
+        .search-bar {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            flex-grow: 1;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .project-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 20px rgba(57, 211, 83, 0.1);
+        }
+        .project-title { font-size: 1.2rem; color: var(--accent-blue); margin-bottom: 0.5rem; }
+        .project-desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
+        .project-tags { display: flex; gap: 0.5rem; font-size: 0.8rem; }
+        .project-tags span { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--accent-purple); }
+
+        /* Contribution Graph */
+        .contrib-graph {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        .graph-grid {
+            display: grid;
+            grid-template-columns: repeat(52, 1fr);
+            gap: 3px;
+            width: max-content;
+        }
+        .graph-cell {
+            width: 12px; height: 12px;
+            background: var(--bg-dark);
+            border-radius: 2px;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        .graph-cell:hover { transform: scale(1.5); z-index: 10; border: 1px solid rgba(255,255,255,0.5); }
+        .lvl-1 { background: #0e4429; }
+        .lvl-2 { background: #006d32; }
+        .lvl-3 { background: #26a641; }
+        .lvl-4 { background: #39d353; box-shadow: 0 0 5px var(--accent-cyan); }
+
+        /* Contact Form */
+        .contact-form {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-control {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.8rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+            resize: vertical;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(188, 140, 255, 0.2);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 9000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            width: 90%; max-width: 600px;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+        .modal-close {
+            float: right; color: var(--text-secondary);
+            font-size: 1.5rem; transition: color 0.3s;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #ff5555; }
+
+        /* Fade-in Animation */
+        .fade-in {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-content"></div>
+    </div>
+
+    <!-- Scroll Progress -->
+    <div id="scroll-progress"></div>
+
+    <!-- Canvas Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar fade-in">
+            <img src="avatar.png" alt="Prajjwal Tripathi" class="avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2M5ZDFkOSI+PHBhdGggZD0iTTEyIDJDMi4zMDggMiA0IDguMzA4IDQgMTRzOC4zMDggMTIgMTIgMTIgMTItNS42OTIgMTItMTJTMTcuNjkyIDIgMTIgMnptMCAyMmMtNS41MTQgMC0xMC00LjQ4Ni0xMC0xMFM2LjQ4NiA0 MTIgNCAyMiA4LjQ4NiAyMiAxNCAxNy41MTQgMjQgMTIgMjR6bTAtMTZjLTIuMjA2IDAtNCAxLjc5NC00IDRzMS43OTQgNCA0IDQgNCAxLjE5NCA0LTRtLTQuOTk1IDguMzM5Yy0uMzkxLS4yOTMtLjg0My0uNDQ3LTEuMzMtLjQ1Ny0xLjMwMy0uMDI3LTIuNTE3LS41OTItMy40NjMtMS41MjctMS4wMTQtMS4wMDItMS42Mi0yLjMwOC0xLjY3Ni0zLjY2OC0uMDI3LTEuMzU1LjUwMS0yLjY3NiAxLjQ2Mi0zLjY2MSAxLjk5MS0yLjA0IDUuMTgzLTIuMDc5IDcuMjAzLS4wNzVsLjAwNC4wMDRjMS4wMDggMS4wMTEgMS41NzYgMi4zNTMgMS41NTIgMy43MDQtLjAyNCAxLjI5MS0uNTg5IDIuNTMyLTEuNTIzIDMuNDM5LTEuMTkzIDEuMTYtMy4wMTIgMS43MDYtNC43MiAxLjQ3LTIuMDI5LS4yOC0zLjkwMi0xLjc3LTQuNTg3LTMuNjU3LS4yNy0uNzQ4LS4yOTMtMS41NjItLjA2NS0yLjMwOGExLjAwMiAxLjAwMiAwIDEgMSAxLjkwNC42MTNjLS4xNDIuNDcyLS4xMjQuOTg4LjA0NSAxLjQ1Ny40MyAxLjE5MiAxLjYwNSAyLjEzMSAyLjg4IDIuMzA2czIuNDc2LS4zMzUgMy4yMjMtMS4wNjJjLjU5LS41NzMuOTQyLTEuMzU5Ljk1Ni0yLjE3LjAxNi0uODUxLS4zNDMtMS42OTktLjk3NS0yLjMzNGwtLjAwNC0uMDA0Yy0xLjI2NC0xLjI2MS0zLjI1Ny0xLjIzOC00LjQ5OS4wMjYtLjYwNi42Mi0uOTQgMS40NTMtLjkyMyAyLjMwMi4wMTcgMS4wMTEuNDYzIDEuNzg2IDExLjAyOSAyLjM1Mi4zOTEuMzkyIDEuMDEuNjM0IDEuNTIzLjY1LjA4OC4wMDMuMTc2LjAwMy4yNjQtLjAwNi40OS0uMDUyLjk4Mi4xMSAxLjM4Ni40NTUuODI5LjcwOSAyLjAyNiAxLjA3MSAzLjIwNCAuOTY5IDEuMTgzLS4xMDQgMi4yOTYtLjc0OCAyLjk5LTEuNzRhMS4wMDIgMS4wMDIgMCAxIDEgMS42ODYgMS4wODJjLS45MDIgMS4yOTEtMjuMzUgMi4xMjctMy44OSAyLjI2MS0uMTI2LjAxMS0uMjUzLjAxMS0uMzgxLS4wMDItMS42NzMtLjEzOS0zLjI2OS0uNzM2LTQuMzk0LTEuNjk0eiIvPjwvc3ZnPg=='">
+            <h2 class="name">Prajjwal Tripathi</h2>
+            <p class="username">@Prajjwaltripathi20</p>
+            <p class="bio">Aspiring Data Analyst & Frontend Developer passionate about transforming raw data into meaningful insights. Skilled in Python, SQL, and building interactive dashboards and modern web applications.</p>
+            
+            <div class="contact-info">
+                <a href="mailto:prajjwal.tripathi2024@nst.rishihood.edu.in" target="_blank">✉️ Email Me</a>
+                <a href="https://github.com/Prajjwaltripathi20" target="_blank">🐙 GitHub</a>
+                <a href="https://www.linkedin.com/in/prajjwal-tripathi-031445325/" target="_blank">💼 LinkedIn</a>
+                <a href="tel:8708598631">📱 8708598631</a>
+                <p>📍 New Delhi, India</p>
+            </div>
+
+            <div class="skills">
+                <span class="skill-badge">Python</span>
+                <span class="skill-badge">SQL</span>
+                <span class="skill-badge">Excel</span>
+                <span class="skill-badge">Pandas</span>
+                <span class="skill-badge">NumPy</span>
+                <span class="skill-badge">JavaScript</span>
+                <span class="skill-badge">React</span>
+                <span class="skill-badge">HTML</span>
+                <span class="skill-badge">CSS</span>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main class="main-content">
+            
+            <!-- Hero Section -->
+            <section class="hero fade-in">
+                <h1>Hi, I'm Prajjwal Tripathi</h1>
+                <div class="typing-container">
+                    <span id="typing-text" class="typing-text"></span>
+                </div>
+                <div class="cta-buttons">
+                    <a href="#projects" class="btn btn-primary">View Projects</a>
+                    <a href="#contact" class="btn btn-secondary">Contact Me</a>
+                </div>
+            </section>
+
+            <!-- Projects Section -->
+            <section id="projects" class="fade-in">
+                <h2 class="section-title">Pinned Projects</h2>
+                <div class="filters">
+                    <input type="text" class="search-bar" id="search-input" placeholder="Find a project...">
+                    <button class="btn btn-secondary" onclick="filterProjects('All')">All</button>
+                    <button class="btn btn-secondary" onclick="filterProjects('Data')">Data</button>
+                    <button class="btn btn-secondary" onclick="filterProjects('Web')">Web</button>
+                </div>
+
+                <div class="projects-grid" id="projects-grid">
+                    <!-- Project 1 -->
+                    <div class="project-card" data-category="Data" onclick="openModal('Project 1', 'Data analysis dashboard coming soon...')">
+                        <h3 class="project-title">Project 1</h3>
+                        <p class="project-desc">Coming Soon - An interactive data visualization dashboard.</p>
+                        <div class="project-tags">
+                            <span></span> Python
+                            <span style="background: var(--accent-blue)"></span> Pandas
+                        </div>
+                    </div>
+                    <!-- Project 2 -->
+                    <div class="project-card" data-category="Web" onclick="openModal('Project 2', 'Frontend web application coming soon...')">
+                        <h3 class="project-title">Project 2</h3>
+                        <p class="project-desc">Coming Soon - Modern frontend web application.</p>
+                        <div class="project-tags">
+                            <span style="background: #f1e05a"></span> JavaScript
+                            <span style="background: #563d7c"></span> CSS
+                        </div>
+                    </div>
+                    <!-- Project 3 -->
+                    <div class="project-card" data-category="Data" onclick="openModal('Project 3', 'Machine learning model implementation coming soon...')">
+                        <h3 class="project-title">Project 3</h3>
+                        <p class="project-desc">Coming Soon - Machine learning predictive model.</p>
+                        <div class="project-tags">
+                            <span></span> Python
+                            <span style="background: var(--accent-cyan)"></span> SQL
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contribution Graph -->
+            <section class="fade-in">
+                <h2 class="section-title">Contributions</h2>
+                <div class="contrib-graph">
+                    <div class="graph-grid" id="contrib-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Section -->
+            <section id="contact" class="fade-in">
+                <h2 class="section-title">Get in Touch</h2>
+                <form class="contact-form" onsubmit="event.preventDefault(); alert('Message sent!');">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" rows="5" placeholder="Your Message" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" style="color: var(--accent-blue); margin-bottom: 1rem;">Title</h2>
+            <p id="modal-body" style="color: var(--text-secondary);">Content...</p>
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Loader & Initialization ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                init();
+            }, 500);
+        });
+
+        function init() {
+            generateGraph();
+            startTyping();
+            initCanvas();
+            observeElements();
+        }
+
+        // --- 2. Scroll Progress & Fade-in ---
+        const scrollProgress = document.getElementById('scroll-progress');
+        
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.width = scrolled + '%';
+        });
+
+        function observeElements() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        }
+
+        // --- 4. Typing Animation ---
+        const roles = ["Data Analyst", "Frontend Developer", "Problem Solver"];
+        let roleIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typingEl = document.getElementById('typing-text');
+
+        function startTyping() {
+            const currentRole = roles[roleIndex];
+            
+            if (isDeleting) {
+                typingEl.textContent = currentRole.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingEl.textContent = currentRole.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentRole.length) {
+                typeSpeed = 2000; // Pause at end
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                roleIndex = (roleIndex + 1) % roles.length;
+                typeSpeed = 500; // Pause before new word
+            }
+
+            setTimeout(startTyping, typeSpeed);
+        }
+
+        // --- 5. Project Filtering ---
+        function filterProjects(category) {
+            const cards = document.querySelectorAll('.project-card');
+            cards.forEach(card => {
+                if (category === 'All' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                    setTimeout(() => card.style.opacity = '1', 50);
+                } else {
+                    card.style.opacity = '0';
+                    setTimeout(() => card.style.display = 'none', 300);
+                }
+            });
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.project-card').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(term) ? 'block' : 'none';
+            });
+        });
+
+        // --- 6. Modal Logic ---
+        const modal = document.getElementById('modal');
+        function openModal(title, body) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').textContent = body;
+            modal.classList.add('active');
+        }
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+        modal.addEventListener('click', (e) => {
+            if(e.target === modal) closeModal();
+        });
+
+        // --- 7. Contribution Graph ---
+        function generateGraph() {
+            const grid = document.getElementById('contrib-grid');
+            const totalCells = 52 * 7; // 52 weeks * 7 days
+            
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'graph-cell';
+                
+                // Randomly assign contribution levels for simulation
+                if (Math.random() > 0.6) {
+                    const level = Math.floor(Math.random() * 4) + 1;
+                    cell.classList.add(`lvl-${level}`);
+                }
+                
+                // Add animated delay
+                cell.style.animationDelay = `${Math.random() * 2}s`;
+                grid.appendChild(cell);
+            }
+        }
+
+        // --- 8. Canvas Background (Floating Gradient Blobs/Particles) ---
+        function initCanvas() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Mouse interaction
+            let mouse = { x: null, y: null, radius: 150 };
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.x;
+                mouse.y = e.y;
+            });
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 3 + 1;
+                    this.baseX = this.x;
+                    this.baseY = this.y;
+                    this.density = (Math.random() * 30) + 1;
+                    // Colors: blue, purple, cyan with low opacity
+                    const colors = ['rgba(88, 166, 255, 0.2)', 'rgba(188, 140, 255, 0.2)', 'rgba(57, 211, 83, 0.2)'];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+
+                update() {
+                    // Slight floating animation
+                    this.x += Math.sin(Date.now() / 1000 + this.density) * 0.5;
+                    this.y += Math.cos(Date.now() / 1000 + this.density) * 0.5;
+
+                    // Mouse interaction
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    let forceDirectionX = dx / distance;
+                    let forceDirectionY = dy / distance;
+                    let maxDistance = mouse.radius;
+                    let force = (maxDistance - distance) / maxDistance;
+                    let directionX = forceDirectionX * force * this.density;
+                    let directionY = forceDirectionY * force * this.density;
+
+                    if (distance < mouse.radius) {
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    } else {
+                        if (this.x !== this.baseX) {
+                            let dx = this.x - this.baseX;
+                            this.x -= dx / 20;
+                        }
+                        if (this.y !== this.baseY) {
+                            let dy = this.y - this.baseY;
+                            this.y -= dy / 20;
+                        }
+                    }
+                    this.draw();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                // Number of particles based on screen size for performance
+                let numParticles = (width * height) / 15000;
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw connecting lines
+                for(let a = 0; a < particles.length; a++) {
+                    for(let b = a; b < particles.length; b++) {
+                        let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
+                                     + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+                        if (distance < (canvas.width/10) * (canvas.height/10)) {
+                            let opacityValue = 1 - (distance/20000);
+                            ctx.strokeStyle = 'rgba(88, 166, 255, ' + (opacityValue * 0.1) + ')';
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[a].x, particles[a].y);
+                            ctx.lineTo(particles[b].x, particles[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                }
+                requestAnimationFrame(animate);
+            }
+
+            initParticles();
+            animate();
+        }
+    </script>
+</body>
+</html>
